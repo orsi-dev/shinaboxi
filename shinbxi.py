@@ -32,6 +32,7 @@ def redhat_distro():
     print 'redhat,centos'
 
     print "Check prerequisites (yum, epel, openssl, shellinabox )"
+
     prereqs = ["yum", "epel", "openssl", "shellinabox"]
 
     for package in prereqs:
@@ -48,6 +49,21 @@ def redhat_distro():
 
             print 'Nothin to do everything is installed!'
 
+            question3 = 'do you want start service and open port?'
+
+            ch3 = query_yes_no(question3,default='yes')
+
+            if ch3:
+
+                with open('/etc/sysconfig/shellinaboxd','a') as config_file:
+                        config_file.write('\nOPTS="-t -s /:SSH:0.0.0.0"')
+
+                pak = subprocess.Popen("firewall-cmd --zone=public --add-port=4200/tcp --permanent;firewall-cmd --reload;service shellinaboxd restart;systemctl enable shellinaboxd.service;" , stdout=subprocess.PIPE, shell=True)
+
+            else:
+
+                sys.exit('nothing to do!')
+
         else:
             print "not installed"
 
@@ -59,7 +75,6 @@ def redhat_distro():
                 print 'start installing package %s' %package
 
                 pg = subprocess.Popen("yum install -y %s" % package, stdout=subprocess.PIPE, shell=True)
-                #pg = subprocess.Popen("echo %s" % package, stdout=subprocess.PIPE, shell=True)
 
                 output2 = pg.communicate()[0]
 
@@ -71,18 +86,18 @@ def redhat_distro():
                 ch2 = query_yes_no(question2,default='yes')
 
                 if ch2:
+                    #file config update
+                    with open('/etc/sysconfig/shellinaboxd','a') as config_file:
+                        config_file.write('OPTS="-t -s /:SSH:0.0.0.0"')
 
-                    pak = subprocess.Popen("firewall-cmd --zone=public --add-port=4000/tcp --permanent;firewall-cmd --reload;service shellinabox start" % package, stdout=subprocess.PIPE, shell=True)
+                    pak = subprocess.Popen("firewall-cmd --zone=public --add-port=4200/tcp --permanent;systemctl enable shellinaboxd.service;firewall-cmd --reload;service shellinabox start" , stdout=subprocess.PIPE, shell=True)
 
                 else:
 
                     sys.exit('nothin to do!')
 
-
             else:
                 print 'installing the next package'
-
-
 
 
 def debian_distro():
